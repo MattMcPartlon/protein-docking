@@ -7,9 +7,9 @@ from torch import nn, Tensor
 import torch
 
 from protein_learning.common.helpers import exists
-from protein_learning.common.rigids import Rigids
-from protein_learning.networks.attention.node_attention import NodeUpdateBlock
-from protein_learning.networks.attention.pair_attention import PairUpdateBlock
+from protein_learning.network.common.rigids import Rigids
+from protein_learning.networks.geometric_gt.node_block import NodeUpdateBlock
+from protein_learning.networks.geometric_gt.pair_block import PairUpdateBlock
 from protein_learning.networks.geometric_gt.geom_gt_config import GeomGTConfig
 from protein_learning.networks.loss.coord_loss import FAPELoss
 from protein_learning.networks.common.constants import RIGID_SCALE

@@ -8,7 +8,7 @@ from torch import nn, Tensor
 
 from protein_learning.common.global_constants import get_logger
 from protein_learning.common.helpers import exists, safe_norm
-from protein_learning.common.rigids import Rigids
+from protein_learning.network.common.rigids import Rigids
 
 logger = get_logger(__name__)
 

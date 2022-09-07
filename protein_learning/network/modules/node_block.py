@@ -8,7 +8,7 @@ from einops.layers.torch import Rearrange  # noqa
 from torch import nn, einsum, Tensor
 from torch.cuda.amp import autocast
 
-from protein_learning.common.rigids import Rigids
+from protein_learning.network.common.rigids import Rigids
 from protein_learning.networks.common.net_utils import (
     exists,
     default,
