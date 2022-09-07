@@ -8,12 +8,11 @@ import torch
 
 from protein_learning.common.helpers import exists
 from protein_learning.network.common.rigids import Rigids
-from protein_learning.networks.geometric_gt.node_block import NodeUpdateBlock
-from protein_learning.networks.geometric_gt.pair_block import PairUpdateBlock
-from protein_learning.networks.geometric_gt.geom_gt_config import GeomGTConfig
-from protein_learning.networks.loss.coord_loss import FAPELoss
-from protein_learning.networks.common.constants import RIGID_SCALE
-
+from protein_learning.network.modules.node_block import NodeUpdateBlock
+from protein_learning.network.modules.pair_block import PairUpdateBlock
+from protein_learning.network.modules.net_config import GeomGTConfig
+from protein_learning.network.modules.fape import FAPELoss
+from protein_learning.network.common.constants import RIGID_SCALE
 
 
 class GraphTransformer(nn.Module):  # noqa
@@ -88,6 +87,9 @@ class GraphTransformer(nn.Module):  # noqa
         :param res_mask: residue mask (b,n)
         :param pair_mask: pair mask (b,n,n)
         :param compute_aux: whether to compute auxilliary FAPE loss between iterations
+        :param rigid_update_mask: described in "flexible coordinates" section of paper,
+        used if coordinates are to be treated as part of the input - in which case,
+        the true_rigids parameter should not be none (o.w. this is skipped)
 
         :return:
             (1) scalar features
@@ -101,6 +103,9 @@ class GraphTransformer(nn.Module):  # noqa
         b, n, *_ = node_feats.shape
         assert node_feats.ndim == 3 and pair_feats.ndim == 4, f"scalar and pair feats must have batch dimension!"
 
+        if exists(rigid_update_mask) and not exists(true_rigids):
+            print("[WARNING] rigid update mask was passed, but rigids are missing from input!")
+
         if self.use_ipa:
             # if no initial rigids passed in, start from identity
             rigids = rigids if exists(rigids) else \
@@ -110,14 +115,10 @@ class GraphTransformer(nn.Module):  # noqa
         if exists(rigid_update_mask) and exists(true_rigids):
             msk = rigid_update_mask
             centroid = torch.mean(true_rigids.translations[0, msk], dim=0, keepdim=True)
-            assert centroid.numel() == 3
             rigids.translations[0, ~msk] = centroid * torch.ones_like(rigids.translations[0, ~msk])
             trans, quats = true_rigids.translations[0, msk], true_rigids.quaternions[0, msk]
-            rigids.translations[0, msk] = trans.detach().clone()
-            rigids.quaternions[0, msk] = quats.detach().clone()
-            # rigids.translations.requires_grad = True
-            # rigids.quaternions.requires_grad = True
-            rigids = rigids.scale(1 / RIGID_SCALE)
+            map(lambda x: x.detach().clone() * (1 / RIGID_SCALE), (trans, quats))
+            rigids.translations[0, msk], rigids.quaternions[0, msk] = trans, quats
 
         node_updates, pair_updates, aux_loss = self.node_updates, self.pair_updates, None
 

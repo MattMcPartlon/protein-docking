@@ -15,7 +15,7 @@ from pytorch3d.transforms import (  # noqa
     quaternion_apply  # noqa
 )
 from torch import nn, Tensor, tensor, tensor_split  # noqa
-from protein_learning.networks.common.constants import REZERO_INIT
+from protein_learning.network.common.constants import REZERO_INIT
 
 """Helper Functions"""
 rot_mul_vec = lambda x, y: torch.einsum("... i j, ... j -> ... i", x, y)

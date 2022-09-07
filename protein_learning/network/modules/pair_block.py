@@ -6,7 +6,7 @@ import torch.utils.checkpoint as checkpoint
 from einops import rearrange  # noqa
 from torch import nn, einsum, Tensor
 
-from protein_learning.networks.common.net_utils import (
+from protein_learning.network.common.net_utils import (
     Residual,
     exists,
     default,
